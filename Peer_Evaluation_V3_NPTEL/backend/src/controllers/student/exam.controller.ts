@@ -7,7 +7,8 @@ interface AuthRequest extends Request {
   user?: any;
 }
 
-export const getStudentExamsByCourse = async (
+export const 
+getStudentExamsByCourse = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction

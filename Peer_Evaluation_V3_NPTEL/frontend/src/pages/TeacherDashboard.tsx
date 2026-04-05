@@ -10,6 +10,8 @@ import TeacherManageRoles from "../components/teacher/ManageRoles";
 import TeacherCourses from "../components/teacher/TeacherCourses";
 import TeacherExams from "../components/teacher/TeacherExams";
 import ChangePassword from "../components/teacher/ChangePassword";
+import StudentsView from "../components/teacher/StudentsView";
+import { PiStudent } from "react-icons/pi";
 
 const PORT = import.meta.env.VITE_BACKEND_PORT || 5000;
 
@@ -105,6 +107,7 @@ const TeacherDashboard = () => {
     roles: <TeacherManageRoles />,
     courses: <TeacherCourses />,
     exams: <TeacherExams />,
+    Students:<StudentsView/>,
     tickets: <TeacherEscalatedTickets />,
      resolved: <TeacherResolvedTickets />,
   };
@@ -114,6 +117,7 @@ const TeacherDashboard = () => {
     roles: FiShield,
     courses: FiBook,
     exams: FiEdit,
+    Students:PiStudent,
      tickets: FiAlertCircle,
      resolved: FiCheckCircle,
   };
@@ -313,6 +317,7 @@ const TeacherDashboard = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      
     </div>
   );
 };

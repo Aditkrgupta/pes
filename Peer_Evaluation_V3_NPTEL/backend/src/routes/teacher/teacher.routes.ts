@@ -36,6 +36,7 @@ import { generateQrPdfBundle } from "../../controllers/teacher/generateExamQrPdf
 import { handleBulkUploadScans } from "../../controllers/teacher/handleBulkUploadScans.controller.ts";
 import { generateTicketsForPendingEvaluations } from "../../controllers/teacher/markUnevaluated.controller.ts";
 import { generateEvaluationStatistics } from "../../controllers/teacher/statistics.controller.ts";
+import { filterStudents } from "../../controllers/teacher/filterStudents.Controller.ts";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -88,6 +89,7 @@ router.delete(
 );
 router.get("/batch/:batchId/ta", authMiddleware, getBatchTA);
 router.get("/students", authMiddleware, getAllStudents);
+router.post('/filter',authMiddleware,filterStudents)
 router.post("/enroll", authMiddleware, enrollStudents);
 router.get("/batch/:batchId/students", authMiddleware, getBatchStudents2);
 router.get("/ta-candidates/:courseId", authMiddleware, getTaCandidates);

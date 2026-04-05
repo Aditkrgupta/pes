@@ -168,8 +168,8 @@ export default function Register() {
           <select value={role} onChange={(e) => setRole(e.target.value)} className="input-field">
             <option value="student">Student</option>
             <option value="teacher">Professor</option>
-            {/*<option value="ta">TA</option>*/}
-            {/*<option value="admin">Admin</option>*/}
+            {/* <option value="ta">TA</option>
+            <option value="admin">Admin</option> */}
           </select>
 
           <button

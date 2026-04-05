@@ -91,7 +91,8 @@ export const getAllCourses = async (_req: Request, res: Response) => {
     }).select("_id name code startDate endDate");
 
     if (!courses || courses.length === 0) {
-      res.status(404).json({ message: "No courses found" });
+     res.status(404).json({ message: "No courses found" });
+      return
     }
 
     const filtered = courses.map((course) => ({
