@@ -11,10 +11,11 @@ const transporter = nodemailer.createTransport({
 export const sendReminderEmail = async (
   to: string,
   subject: string,
-  text: string
+  text: string,
+  from?: string
 ) => {
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: from || process.env.EMAIL_USER,
     to,
     subject,
     text,
@@ -44,11 +45,10 @@ export const sendTicketResolvedEmail = async (
         <li><strong>Subject:</strong> ${ticketSubject}</li>
         <li><strong>Description:</strong> ${description}</li>
         <li><strong>Teacher Remark:</strong> ${remark}</li>
-        ${
-          marksUpdated !== null && marksUpdated !== undefined
-            ? `<li><strong>Updated Marks:</strong> ${marksUpdated}</li>`
-            : ''
-        }
+        ${marksUpdated !== null && marksUpdated !== undefined
+        ? `<li><strong>Updated Marks:</strong> ${marksUpdated}</li>`
+        : ''
+      }
       </ul>
       <p>Status: ✅ Resolved</p>
       <p>Thank you for using the Peer Evaluation System.</p>

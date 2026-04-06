@@ -259,7 +259,7 @@ export async function updateEvaluatorCredibilityScore(
     profile.totalEvaluations = evaluations.length;
     profile.scoreVariance = avgVariance;
     profile.scoreStdDev = Math.sqrt(avgVariance);
-    
+
     // Calculate average score given by this evaluator
     const allScores = evaluations.flatMap((e) => e.marks);
     profile.averageScoreGiven =
@@ -293,6 +293,120 @@ export async function updateEvaluatorCredibilityScore(
       error
     );
     return 0.5; // Return neutral score on error
+  }
+}
+
+/**
+ * Incrementally update evaluator credibility score after a new evaluation
+ * This updates existing stats rather than recalculating everything
+ */
+export async function updateEvaluatorCredibilityIncremental(
+  evaluatorId: Types.ObjectId,
+  examId: Types.ObjectId,
+  newMarks: number[]
+): Promise<number> {
+  try {
+    // Get or create EvaluatorProfile
+    const exam = await Exam.findById(examId);
+    const courseId = exam?.course;
+
+    let profile = await EvaluatorProfile.findOne({
+      evaluator: evaluatorId,
+      exam: examId,
+    });
+
+    if (!profile) {
+      profile = new EvaluatorProfile({
+        evaluator: evaluatorId,
+        exam: examId,
+        course: courseId,
+      });
+    }
+
+    // Update evaluation count
+    profile.totalEvaluations += 1;
+
+    // Update average score given (incremental calculation)
+    const totalScoreGiven = profile.averageScoreGiven * (profile.totalEvaluations - 1) +
+      newMarks.reduce((sum, mark) => sum + mark, 0);
+    profile.averageScoreGiven = totalScoreGiven / profile.totalEvaluations;
+
+    // For variance, we need to recalculate from all evaluations (can't do incremental easily)
+    // Get all evaluations to recalculate stats
+    const evaluations = await Evaluation.find({
+      evaluator: evaluatorId,
+      exam: examId,
+      status: 'completed',
+      isTACorrected: false,
+    });
+
+    if (evaluations.length === 0) return 0.5;
+
+    // Extract marks per question across all evaluations
+    const numQuestions = evaluations[0].marks?.length || 0;
+    if (numQuestions === 0) return 0.5;
+
+    const allScoresPerQuestion: number[][] = Array.from(
+      { length: numQuestions },
+      () => []
+    );
+
+    for (const ev of evaluations) {
+      for (let q = 0; q < numQuestions; q++) {
+        allScoresPerQuestion[q].push(ev.marks[q]);
+      }
+    }
+
+    // Calculate consistency (inverse of variance)
+    const variances = allScoresPerQuestion.map((scores) => {
+      const stats = calculateScoreStatistics(scores);
+      return stats.variance;
+    });
+
+    const avgVariance =
+      variances.reduce((a, b) => a + b, 0) / variances.length;
+    const maxExpectedVariance = 100;
+    const consistencyScore = 1 - Math.min(1, avgVariance / maxExpectedVariance);
+
+    // Calculate bias vs class average
+    const bias = await calculateBiasVsClassAverage(evaluatorId, examId);
+    const biasDistance = Math.abs(bias);
+    const biasPenalty = 1 - biasDistance * 0.5;
+
+    // Calculate accuracy vs TA (if TA reviews exist)
+    const { accuracy, correlation } = await calculateAccuracyVsTA(
+      evaluatorId,
+      examId
+    );
+
+    // Combine metrics into final credibility score
+    const credibilityScore =
+      consistencyScore * biasPenalty * Math.max(0.5, accuracy);
+
+    const finalScore = Math.max(0, Math.min(1, credibilityScore));
+    const trustWeight = 0.5 + finalScore;
+
+    // Update profile with calculated metrics
+    profile.scoreVariance = avgVariance;
+    profile.scoreStdDev = Math.sqrt(avgVariance);
+    profile.biasVsClassAverage = bias;
+    profile.correlationWithTruth = correlation;
+    profile.accuracyVsTA = accuracy;
+    profile.credibilityScore = finalScore;
+    profile.trustWeightMultiplier = trustWeight;
+    profile.lastUpdated = new Date();
+
+    profile.isFlaggedAsUnreliable = finalScore < 0.3;
+
+    await profile.save();
+
+    return finalScore;
+  } catch (error) {
+    console.error(
+      `Error incrementally updating credibility for evaluator ${evaluatorId}:`,
+      error
+    );
+    return 0.5;
   }
 }
 

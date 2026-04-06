@@ -71,6 +71,12 @@ export const initiatePeerEvaluation = async (
 
     await Evaluation.insertMany(evalsToInsert);
 
+    // Mark the exam as having peer evaluation initiated
+    await Exam.findByIdAndUpdate(examId, {
+      peerEvaluationInitiated: true,
+      peerEvaluationInitiatedAt: new Date(),
+    });
+
     const emailSubject = "📢 Peer Evaluation Round Started";
     const emailBody = `Hi {{name}},\n\nYou have been assigned peer evaluations for your recent exam.\n\nPlease visit the PES portal and complete your assigned evaluations at the earliest.\n\nThank you,\nPES Team`;
 

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Evaluation } from '../../models/Evaluation.ts';
 import { Exam } from '../../models/Exam.ts';
 import { User } from '../../models/User.ts';
+import { updateEvaluatorCredibilityIncremental } from '../../utils/credibilityScoring.js';
 
 export const submitEvaluation = async (
   req: Request,
@@ -51,6 +52,20 @@ export const submitEvaluation = async (
     });
 
     await evaluation.save();
+
+    // Update evaluator's credibility score incrementally
+    const credibilityScore = await updateEvaluatorCredibilityIncremental(
+      evaluatorId as any,
+      examId as any,
+      marks
+    );
+
+    // Update the evaluation with the credibility score and trust weight
+    const trustWeight = 0.5 + credibilityScore;
+    await Evaluation.findByIdAndUpdate(evaluation._id, {
+      evaluatorCredibilityScore: credibilityScore,
+      evaluatorTrustWeight: trustWeight,
+    });
 
     await User.findByIdAndUpdate(evaluatorId, {
       $inc: { reputationScore: 1 },

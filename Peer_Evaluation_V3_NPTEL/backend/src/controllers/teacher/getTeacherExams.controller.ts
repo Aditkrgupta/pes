@@ -26,7 +26,7 @@ export const getTeacherExams = async (
           endTime: exam.endTime,
           numQuestions: exam.numQuestions,
           k: exam.k,
-          questions: exam.questions, 
+          maxMarks: exam.maxMarks,
         };
       })
     );

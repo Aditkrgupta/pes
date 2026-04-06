@@ -1,9 +1,9 @@
 // frontend/src/components/teacher/TeacherDashboard.tsx
 import { useState, useEffect, type JSX } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiMenu, FiHome, FiShield, FiBook, FiEdit, FiLogOut, FiSun, FiMoon,FiAlertCircle,FiCheckCircle, FiTrendingUp } from "react-icons/fi";
+import { FiMenu, FiHome, FiShield, FiBook, FiEdit, FiLogOut, FiSun, FiMoon, FiAlertCircle, FiCheckCircle, FiTrendingUp, FiBarChart2 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
-import TeacherResolvedTickets from "../components/teacher/TeacherResolvedTickets"; 
+import TeacherResolvedTickets from "../components/teacher/TeacherResolvedTickets";
 import TeacherEscalatedTickets from "../components/teacher/TeacherEscalatedTickets";
 import TeacherHome from "../components/teacher/TeacherHome";
 import TeacherManageRoles from "../components/teacher/ManageRoles";
@@ -12,6 +12,7 @@ import TeacherExams from "../components/teacher/TeacherExams";
 import ChangePassword from "../components/teacher/ChangePassword";
 import StudentsView from "../components/teacher/StudentsView";
 import TeacherEvaluatorCredibility from "../components/teacher/TeacherEvaluatorCredibility";
+import TeacherAnalytics from "../components/teacher/TeacherAnalytics";
 import { PiStudent } from "react-icons/pi";
 import type { IconType } from "react-icons";
 
@@ -109,10 +110,11 @@ const TeacherDashboard = () => {
     roles: <TeacherManageRoles />,
     courses: <TeacherCourses />,
     exams: <TeacherExams />,
-    Students:<StudentsView/>,
+    Students: <StudentsView />,
+    analytics: <TeacherAnalytics />,
     credibility: <TeacherEvaluatorCredibility darkMode={darkMode} />,
     tickets: <TeacherEscalatedTickets />,
-     resolved: <TeacherResolvedTickets />,
+    resolved: <TeacherResolvedTickets />,
   };
 
   const icons: Record<string, IconType> = {
@@ -120,10 +122,11 @@ const TeacherDashboard = () => {
     roles: FiShield,
     courses: FiBook,
     exams: FiEdit,
-    Students:PiStudent,
+    Students: PiStudent,
+    analytics: FiBarChart2,
     credibility: FiTrendingUp,
-     tickets: FiAlertCircle,
-     resolved: FiCheckCircle,
+    tickets: FiAlertCircle,
+    resolved: FiCheckCircle,
   };
 
   return (
@@ -321,7 +324,7 @@ const TeacherDashboard = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      
+
     </div>
   );
 };

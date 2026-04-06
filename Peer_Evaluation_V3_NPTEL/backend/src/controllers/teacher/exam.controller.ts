@@ -21,11 +21,20 @@ export const createExam = async (
       numQuestions,
       k,
       maxMarks,
+      reminderSchedule,
     } = req.body;
 
     if (!req.user?._id) {
       res.status(401).json({ message: "Unauthorized: no user ID in token" });
       return;
+    }
+
+    if (reminderSchedule && Array.isArray(reminderSchedule)) {
+      const firstReminder = reminderSchedule[0];
+      if (firstReminder.sendTime && new Date(firstReminder.sendTime) > new Date(startTime)) {
+        res.status(400).json({ message: "Reminder send time must be on or before the exam start time" });
+        return;
+      }
     }
 
     const exam = new Exam({
@@ -37,6 +46,14 @@ export const createExam = async (
       numQuestions,
       k,
       maxMarks,
+      reminderSchedule: Array.isArray(reminderSchedule)
+        ? reminderSchedule.map((item: any) => ({
+          type: item.type || 'preExam',
+          offsetHours: item.offsetHours || 1,
+          sendTime: item.sendTime ? new Date(item.sendTime) : undefined,
+          sentAt: null,
+        }))
+        : [],
       createdBy: req.user._id,
     });
 
@@ -82,7 +99,17 @@ export const updateExam = async (
 ): Promise<void> => {
   try {
     const { examId } = req.params;
-    const updates = req.body; // includes optional `k` and maxMarks
+    const updates = {
+      ...req.body,
+      reminderSchedule: Array.isArray(req.body.reminderSchedule)
+        ? req.body.reminderSchedule.map((item: any) => ({
+          type: item.type || 'preExam',
+          offsetHours: item.offsetHours || 1,
+          sendTime: item.sendTime ? new Date(item.sendTime) : undefined,
+          sentAt: item.sentAt || null,
+        }))
+        : undefined,
+    };
     const exam = await Exam.findByIdAndUpdate(examId, updates, { new: true });
 
     if (!exam) {

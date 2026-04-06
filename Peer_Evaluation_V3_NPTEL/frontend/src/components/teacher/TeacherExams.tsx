@@ -36,9 +36,7 @@ interface Exam {
   title: string;
   startTime: string;
   endTime: string;
-  numQuestions: number;
-  k: number;
-  // questions?: { q?: string; max?: number; questionText?: string; maxMarks?: number }[];
+  reminderSchedule?: { sendTime: string; sentAt?: string | null }[];
 }
 
 export default function TeacherExams() {
@@ -55,11 +53,12 @@ export default function TeacherExams() {
   const [title, setTitle] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [reminderTime, setReminderTime] = useState("");
   const [k, setK] = useState(1);
   // Remove questions state, use numQuestions and questionPaperFile
   const [numQuestions, setNumQuestions] = useState<number>(1);
   const [maxMarks, setMaxMarks] = useState<number[]>([0]);
-  const [questionPaperFile, setQuestionPaperFile] = useState<File | null>(null);
+  const [, setQuestionPaperFile] = useState<File | null>(null);
 
   // Loading states
   const [allLoading, setAllLoading] = useState(true);
@@ -132,6 +131,7 @@ export default function TeacherExams() {
     setTitle("");
     setStartTime("");
     setEndTime("");
+    setReminderTime("");
     setK(1);
     setNumQuestions(1);
     setMaxMarks([0]);
@@ -151,6 +151,7 @@ export default function TeacherExams() {
         title,
         startTime,
         endTime,
+        reminderSchedule: reminderTime ? [{ sendTime: reminderTime }] : [],
         k,
         numQuestions,
         maxMarks,
@@ -176,6 +177,7 @@ export default function TeacherExams() {
         title,
         startTime,
         endTime,
+        reminderSchedule: reminderTime ? [{ sendTime: reminderTime }] : [],
         k,
         numQuestions,
         maxMarks,
@@ -203,6 +205,8 @@ export default function TeacherExams() {
     }
     setStartTime(toInputDatetime(exam.startTime));
     setEndTime(toInputDatetime(exam.endTime));
+    const schedule = (exam as any).reminderSchedule?.[0];
+    setReminderTime(schedule?.sendTime ? toInputDatetime(schedule.sendTime) : "");
     setK(exam.k);
     setNumQuestions(exam.numQuestions || 1);
     setMaxMarks(exam.maxMarks || Array(exam.numQuestions).fill(0));
@@ -382,8 +386,8 @@ export default function TeacherExams() {
             flaggedErr.response?.data?.error === "Exam not found"
               ? "Exam not found."
               : flaggedErr.response?.data?.error === "No completed evaluations found"
-              ? "No completed evaluations found for this exam."
-              : msg;
+                ? "No completed evaluations found for this exam."
+                : msg;
         }
         toastAction(msg, "error");
       }
@@ -394,8 +398,8 @@ export default function TeacherExams() {
           err.response?.data?.error === "Exam not found"
             ? "Exam not found."
             : err.response?.data?.error === "No completed evaluations found"
-            ? "No completed evaluations found for this exam."
-            : msg;
+              ? "No completed evaluations found for this exam."
+              : msg;
       }
       toastAction(msg, "error");
     }
@@ -414,6 +418,7 @@ export default function TeacherExams() {
             <th className="px-4 py-2">End</th>
             <th className="px-4 py-2">#Q</th>
             <th className="px-4 py-2">K</th>
+            <th className="px-4 py-2">Peer Eval</th>
             <th className="px-4 py-2 flex gap-3 items-center justify-center min-w-[160px]">Actions</th>
           </tr>
         </thead>
@@ -430,6 +435,13 @@ export default function TeacherExams() {
               <td className="px-4 py-2">{new Date(exam.endTime).toLocaleString()}</td>
               <td className="px-4 py-2 text-center">{exam.numQuestions}</td>
               <td className="px-4 py-2 text-center">{exam.k}</td>
+              <td className="px-4 py-2 text-center">
+                {exam.peerEvaluationInitiated ? (
+                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">Initiated</span>
+                ) : (
+                  <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-semibold">Not Started</span>
+                )}
+              </td>
               <td className="px-4 py-2 flex gap-3 items-center justify-center min-w-[190px]">
                 <button
                   onClick={() => openEditForm(exam)}
@@ -641,6 +653,19 @@ export default function TeacherExams() {
               </div>
             </div>
             <div>
+              <label className="font-semibold text-purple-700">Reminder Send Time</label>
+              <input
+                type="datetime-local"
+                className="w-full border-2 border-purple-400 px-4 py-2 rounded-xl"
+                value={reminderTime}
+                onChange={e => setReminderTime(e.target.value)}
+                required
+              />
+              <p className="mt-2 text-sm text-gray-500">
+                Set the exact time to send the pre-exam reminder. It must be on or before the exam start time.
+              </p>
+            </div>
+            <div>
               <label className="font-semibold text-purple-700">Number of Questions</label>
               <input
                 type="number"
@@ -786,6 +811,19 @@ export default function TeacherExams() {
               </div>
             </div>
             <div>
+              <label className="font-semibold text-purple-700">Reminder Send Time</label>
+              <input
+                type="datetime-local"
+                className="w-full border-2 border-purple-400 px-4 py-2 rounded-xl"
+                value={reminderTime}
+                onChange={e => setReminderTime(e.target.value)}
+                required
+              />
+              <p className="mt-2 text-sm text-gray-500">
+                Set the exact time to send the pre-exam reminder. It must be on or before the exam start time.
+              </p>
+            </div>
+            <div>
               <label className="font-semibold text-purple-700">Number of Questions</label>
               <input
                 type="number"
@@ -832,12 +870,12 @@ export default function TeacherExams() {
               </div>
               <div className="mt-2">
                 <label className="font-semibold text-purple-700">Upload Question Paper (PDF)</label>
-                  <input
-                    type="file"
-                    accept="application/pdf"
-                    className="w-full border-2 border-purple-400 px-4 py-2 rounded-xl"
-                    onChange={e => setQuestionPaperFile(e.target.files?.[0] || null)}
-                  />
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  className="w-full border-2 border-purple-400 px-4 py-2 rounded-xl"
+                  onChange={e => setQuestionPaperFile(e.target.files?.[0] || null)}
+                />
               </div>
             </div>
             <div>

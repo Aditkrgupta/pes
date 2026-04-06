@@ -3,7 +3,7 @@ import express from "express";
 import { Request, Response, NextFunction } from 'express';
 import connectDB from "./config/db.ts";
 import studentRoutes from "./routes/student/student.routes.ts";
-import taRoutes from "./routes/ta/ta.routes.ts"; 
+import taRoutes from "./routes/ta/ta.routes.ts";
 import teacherRoutes from "./routes/teacher/teacher.routes.ts";
 import authRoutes from './routes/authorization/auth.routes.ts';
 import adminroutes from './routes/admin/admin.routes.ts';
@@ -18,8 +18,12 @@ import "./models/Course.ts";
 import "./models/Batch.ts";
 import "./models/Exam.ts";
 import "./models/User.ts";
-import "./models/Flag.ts"; 
+import "./models/Flag.ts";
 import "./models/UIDMap.ts";
+import "./models/LearningAnalytics.ts";
+import "./models/AuditLog.ts";
+import "./models/Notification.ts";
+import { startNotificationScheduler } from "./utils/scheduler.ts";
 
 import cors from 'cors';
 import dotenv from "dotenv";
@@ -49,9 +53,10 @@ app.use(express.json());
 
 // Connect DB
 connectDB();
+startNotificationScheduler();
 
 // Routes
-app.use("/api/admin",adminroutes);
+app.use("/api/admin", adminroutes);
 // app.use("/api/admin/student",adminstudentroutes);
 // app.use("/api/admin/teachers",adminteachroutes);
 app.use("/api/student", studentRoutes);

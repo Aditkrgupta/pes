@@ -4,12 +4,12 @@ import { createBatchWithNames } from "../../controllers/admin/course.controller.
 import {
   addCourse,
   //updateCourse,
-  
+
   getAllCourses,
   //getCourseById,
   getAllBatches,
   //getBatchById,
-  
+
   //updateBatch,
   deleteBatch,
   //Update the role
@@ -22,10 +22,11 @@ import {
   flagEvaluatorAsUnreliable,
   adjustTrustWeight,
 } from "../../controllers/admin/evaluatorCredibility.controller.ts";
-
-import { authMiddleware } from "../../middlewares/authMiddleware.ts";      
-import { authorizeRoles } from "../../middlewares/authorizeRoles.ts";   
-import { User } from '../../models/User.ts'; 
+import { getAuditLogs } from "../../controllers/admin/auditLog.controller.ts";
+import { getAdminLearningAnalytics } from "../../controllers/teacher/learningAnalytics.controller.ts";
+import { authMiddleware } from "../../middlewares/authMiddleware.ts";
+import { authorizeRoles } from "../../middlewares/authorizeRoles.ts";
+import { User } from '../../models/User.ts';
 
 const router = Router();
 
@@ -33,7 +34,7 @@ const router = Router();
 //kept few middleware in comments for testing purpose
 
 //Course operations
-router.post("/courses",authMiddleware,authorizeRoles("admin"),addCourse);
+router.post("/courses", authMiddleware, authorizeRoles("admin"), addCourse);
 //router.put("/courses/:courseId",authMiddleware,authorizeRoles("admin"),updateCourse);
 
 router.get('/users', async (_req: Request, res: Response) => {
@@ -49,14 +50,14 @@ router.get('/users', async (_req: Request, res: Response) => {
 
 
 // router.delete("/courses/code/:code",authMiddleware,authorizeRoles("admin"),deleteCourseAndBatches);
-router.get('/courses/',authMiddleware,authorizeRoles("admin"), getAllCourses);
+router.get('/courses/', authMiddleware, authorizeRoles("admin"), getAllCourses);
 //router.get('/courses/:id',authMiddleware,authorizeRoles("admin"), getCourseById);
 
 //Batch operations
 
 //router.put("/batches/:batchId",authMiddleware,authorizeRoles("admin"),updateBatch);
-router.delete("/batches/:id",authMiddleware,authorizeRoles("admin"),deleteBatch);
-router.get('/batches/',authMiddleware,authorizeRoles("admin"), getAllBatches);
+router.delete("/batches/:id", authMiddleware, authorizeRoles("admin"), deleteBatch);
+router.get('/batches/', authMiddleware, authorizeRoles("admin"), getAllBatches);
 //router.get('/batches/:id',authMiddleware,authorizeRoles("admin"), getBatchById);
 router.post("/update-role", updateStudentTaRole);
 router.post('/create-batch-with-names', createBatchWithNames);
@@ -66,6 +67,8 @@ router.post('/evaluator-credibility/calculate/:examId', authMiddleware, authoriz
 router.get('/evaluator-credibility/stats/:examId', authMiddleware, authorizeRoles('admin', 'teacher'), getEvaluatorCredibilityStats_Controller);
 router.put('/evaluator-credibility/flag/:evaluatorId/:examId', authMiddleware, authorizeRoles('admin', 'teacher'), flagEvaluatorAsUnreliable);
 router.put('/evaluator-credibility/trust-weight/:evaluatorId/:examId', authMiddleware, authorizeRoles('admin', 'teacher'), adjustTrustWeight);
+router.get('/audit-logs', authMiddleware, authorizeRoles('admin'), getAuditLogs);
+router.get('/analytics', authMiddleware, authorizeRoles('admin'), getAdminLearningAnalytics);
 
 router.delete("/:courseId", deleteCourseAndBatches);
 export default router;

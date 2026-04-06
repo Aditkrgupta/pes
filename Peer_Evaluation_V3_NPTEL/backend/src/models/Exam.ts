@@ -10,6 +10,14 @@ export interface IExam extends Document {
   maxMarks: number[];
   createdBy: { type: Schema.Types.ObjectId; ref: "User"; required: true };
   k: number; // Number of peer evaluations per student
+  peerEvaluationInitiated?: boolean; // Whether teacher has initiated peer evaluation
+  peerEvaluationInitiatedAt?: Date; // When peer evaluation was initiated
+  reminderSchedule?: {
+    type: 'preExam' | 'evaluationWindow';
+    offsetHours: number;
+    sendTime?: Date;
+    sentAt: Date | null;
+  }[];
   answerKeyPdf?: Buffer;
   answerKeyMimeType?: string;
   questionPaperPdf?: Buffer;
@@ -26,6 +34,16 @@ const examSchema = new Schema<IExam>({
   maxMarks: { type: [Number], required: true },
   createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
   k: { type: Number, required: true },
+  peerEvaluationInitiated: { type: Boolean, default: false },
+  peerEvaluationInitiatedAt: { type: Date, default: null },
+  reminderSchedule: [
+    {
+      type: { type: String, enum: ['preExam', 'evaluationWindow'], required: true, default: 'preExam' },
+      offsetHours: { type: Number, default: 1 },
+      sendTime: { type: Date },
+      sentAt: { type: Date, default: null },
+    },
+  ],
   answerKeyPdf: { type: Buffer },
   answerKeyMimeType: { type: String },
   questionPaperPdf: { type: Buffer },

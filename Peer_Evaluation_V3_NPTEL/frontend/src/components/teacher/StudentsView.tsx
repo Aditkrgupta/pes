@@ -29,7 +29,7 @@ export default function Students() {
   const [loading, setLoading] = useState(true);
   const [filterLoading, setFilterLoading] = useState(false);
   const [showCourse,setShowCourse]=useState(false)
-  // Fetch courses
+
   useEffect(() => {
     axios
       .get(`http://localhost:${PORT}/api/teacher/courses`, {
@@ -39,7 +39,7 @@ export default function Students() {
       .catch(console.error);
   }, []);
 
-  // Fetch ALL students initially
+
   useEffect(() => {
     setLoading(true);
     axios
@@ -51,7 +51,6 @@ export default function Students() {
       .finally(() => setLoading(false));
   }, []);
 
-  // View button handler
   useEffect(()=>{
       const handleViewStudents = async () => {
     if (!selectedCourse || !selectedBatch) {
@@ -181,7 +180,7 @@ export default function Students() {
      
       </div>
 
-      {/* Table / Loading */}
+      
       {isLoading ? (
         <div className="text-lg mt-20 text-gray-400">
           Loading...

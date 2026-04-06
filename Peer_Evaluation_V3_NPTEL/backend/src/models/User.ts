@@ -9,6 +9,8 @@ export interface IUser extends Document {
   role: Role;
   enrolledCourses: Types.ObjectId[];
   reputationScore: number;
+  timezone?: string;
+  lastLogin?: Date;
 }
 
 const userSchema = new Schema<IUser>({
@@ -18,6 +20,8 @@ const userSchema = new Schema<IUser>({
   role: { type: String, enum: ['admin', 'teacher', 'ta', 'student'], required: true },
   enrolledCourses: [{ type: Schema.Types.ObjectId, ref: 'Course' }],
   reputationScore: { type: Number, default: 0 },
+  timezone: { type: String, default: 'UTC' },
+  lastLogin: { type: Date },
 });
 
 export const User = model<IUser>('User', userSchema);

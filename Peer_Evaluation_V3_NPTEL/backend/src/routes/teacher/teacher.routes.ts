@@ -9,6 +9,7 @@ import {
 } from "../../controllers/teacher/teacherEscalatedTicket.controller.ts";
 
 import { authMiddleware } from "../../middlewares/authMiddleware.ts";
+import { auditLogger } from "../../middlewares/auditMiddleware.ts";
 import { getTeacherCourses } from "../../controllers/teacher/getTeacherCourses.controller.ts";
 import { getExamsByCourse } from "../../controllers/teacher/getExamsByCourse.controller.ts";
 import { getTeacherDashboardStats } from "../../controllers/teacher/dashboardStats.controller.ts";
@@ -22,6 +23,9 @@ import {
   getAllExamsForTeacher,
   uploadQuestionPaper,
 } from "../../controllers/teacher/exam.controller.ts";
+import {
+  getTeacherLearningAnalytics,
+} from "../../controllers/teacher/learningAnalytics.controller.ts";
 import { getBatchStudents } from "../../controllers/teacher/getBatchStudents.controller.ts";
 import { initiatePeerEvaluation } from "../../controllers/teacher/peerEvaluation.controller.ts";
 import { assignTaToBatch } from "../../controllers/teacher/assignTaToBatch.controller.ts";
@@ -47,14 +51,20 @@ router.get("/courses/:courseId/exams", authMiddleware, getExamsByCourse);
 
 // Dashboard Stats
 router.get("/dashboard-stats", authMiddleware, getTeacherDashboardStats);
+router.get("/analytics", authMiddleware, getTeacherLearningAnalytics);
 
 // Exam CRUD + Submissions
 router.get("/exams", authMiddleware, getAllExamsForTeacher);
-router.post("/exams", authMiddleware, createExam);
+router.post("/exams", authMiddleware, auditLogger("Create exam", "Exam"), createExam);
 router.get("/exams/:examId", authMiddleware, getSingleExam);
-router.put("/exams/:examId", authMiddleware, updateExam);
-router.delete("/exams/:examId", authMiddleware, deleteExam);
-router.get("/exams/:examId/submissions", authMiddleware, getExamSubmissions);
+router.put("/exams/:examId", authMiddleware, auditLogger("Update exam", "Exam", (req) => req.params.examId), updateExam);
+router.delete("/exams/:examId", authMiddleware, auditLogger("Delete exam", "Exam", (req) => req.params.examId), deleteExam);
+router.get(
+  "/exams/:examId/submissions",
+  authMiddleware,
+  auditLogger("View exam submissions", "Exam", (req) => req.params.examId),
+  getExamSubmissions
+);
 router.post(
   "/exams/:examId/question-paper",
   authMiddleware,
@@ -89,7 +99,7 @@ router.delete(
 );
 router.get("/batch/:batchId/ta", authMiddleware, getBatchTA);
 router.get("/students", authMiddleware, getAllStudents);
-router.post('/filter',authMiddleware,filterStudents)
+router.post('/filter', authMiddleware, filterStudents)
 router.post("/enroll", authMiddleware, enrollStudents);
 router.get("/batch/:batchId/students", authMiddleware, getBatchStudents2);
 router.get("/ta-candidates/:courseId", authMiddleware, getTaCandidates);
@@ -104,7 +114,12 @@ router.post(
 
 // Escalated Tickets
 router.get("/escalated-tickets", authMiddleware, getAllEscalatedTickets);
-router.put("/resolve-ticket/:ticketId", authMiddleware, resolveTicket);
+router.put(
+  "/resolve-ticket/:ticketId",
+  authMiddleware,
+  auditLogger("Resolve escalated ticket", "Ticket", (req) => req.params.ticketId),
+  resolveTicket
+);
 router.get("/resolved-tickets", authMiddleware, getResolvedTickets);
 
 export default router;

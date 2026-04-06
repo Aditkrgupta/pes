@@ -8,10 +8,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'pes-secret';
 const OTP_STORE = new Map<string, string>();
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
-export const sendOtpEmail = async (req: Request, res: Response) : Promise<void> => {
+export const sendOtpEmail = async (req: Request, res: Response): Promise<void> => {
   const { email } = req.body;
-  if (!email)
-  { 
+  if (!email) {
     res.status(400).json({ message: 'Email is required' });
     return;
   }
@@ -23,8 +22,8 @@ export const sendOtpEmail = async (req: Request, res: Response) : Promise<void> 
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: process.env.MAIL_SENDER || "noreplypeerevaluationsystem@gmail.com",      
-      pass: process.env.MAIL_PASSWORD ||  "twmnfoksvgwfcegh"   
+      user: process.env.MAIL_SENDER || "noreplypeerevaluationsystem@gmail.com",
+      pass: process.env.MAIL_PASSWORD || "twmnfoksvgwfcegh"
     }
   });
 
@@ -88,7 +87,7 @@ import { Batch } from '../../models/Batch.ts'; // ✅ Add this import if not pre
 
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password } = req.body;
+    const { email, password, timezone } = req.body;
     const user = await User.findOne({ email });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -98,6 +97,12 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
 
     // 🔍 Check if the user is a TA in any batch
     const isTA = await Batch.exists({ ta: user._id });
+
+    user.lastLogin = new Date();
+    if (timezone) {
+      user.timezone = timezone;
+    }
+    await user.save();
 
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, {
       expiresIn: '7d',
@@ -112,6 +117,8 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         id: user._id,
         name: user.name,
         email: user.email,
+        timezone: user.timezone,
+        lastLogin: user.lastLogin,
       },
     });
   } catch (err) {
@@ -139,12 +146,12 @@ export const forgotPassword = async (req: Request, res: Response) => {
 
     // Send email
     const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.MAIL_SENDER || "noreplypeerevaluationsystem@gmail.com",      
-          pass: process.env.MAIL_PASSWORD ||  "twmnfoksvgwfcegh"   
-        }
-      });
+      service: 'gmail',
+      auth: {
+        user: process.env.MAIL_SENDER || "noreplypeerevaluationsystem@gmail.com",
+        pass: process.env.MAIL_PASSWORD || "twmnfoksvgwfcegh"
+      }
+    });
 
     await transporter.sendMail({
       from: `"Password Reset" <noreplypeerevaluationsystem@gmail.com>`,

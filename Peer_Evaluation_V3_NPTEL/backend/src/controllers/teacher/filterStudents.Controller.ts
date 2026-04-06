@@ -14,7 +14,7 @@ export const filterStudents = async (
       return;
     }
 
-    // 🔥 Find batch
+
     const batchData = await Batch.findOne({
       _id: batch,
       course: courseId,
@@ -27,7 +27,6 @@ export const filterStudents = async (
       return;
     }
 
-    // 🔥 Format response
     const students = batchData.students.map((s: any) => ({
       _id: s._id,
       name: s.name,

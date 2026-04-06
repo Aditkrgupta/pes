@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-    FiMenu, FiLogOut, FiHome, FiBook, FiUsers, FiCheckCircle, FiUploadCloud, FiUser, FiSun, FiMoon,
+    FiMenu, FiLogOut, FiHome, FiBook, FiUsers, FiCheckCircle, FiUploadCloud, FiUser, FiSun, FiMoon, FiBarChart2,
 } from 'react-icons/fi';
 import { motion } from "framer-motion";
 import axios from 'axios';
@@ -13,6 +13,7 @@ import ViewMarks from "../components/student/ViewMarks";
 import DashboardOverview from "../components/student/DashboardOverview";
 import PeerEvaluationsPending from "../components/student/PeerEvaluationsPending";
 import EnrollmentSection from "../components/student/EnrollmentSection";
+import StudentAnalytics from "../components/student/StudentAnalytics";
 
 const PORT = import.meta.env.VITE_BACKEND_PORT || 5000;
 
@@ -87,6 +88,7 @@ const StudentDashboard = () => {
             case 'enrollment': return <EnrollmentSection darkMode={darkMode} />;
             case 'peerEvaluation': return <PeerEvaluationsPending darkMode={darkMode} />;
             case 'viewMarks': return <ViewMarks darkMode={darkMode} />;
+            case 'analytics': return <StudentAnalytics />;
             case 'profile': return <ProfileSection darkMode={darkMode} />;
             default: return <p className="text-center" style={{ color: currentPalette['text-muted'] }}>Select a menu</p>;
         }
@@ -111,6 +113,7 @@ const StudentDashboard = () => {
                             { key: 'enrollment', icon: FiUploadCloud, label: 'Enrollment' },
                             { key: 'peerEvaluation', icon: FiUsers, label: 'Peer Evaluation' },
                             { key: 'viewMarks', icon: FiCheckCircle, label: 'View Marks' },
+                            { key: 'analytics', icon: FiBarChart2, label: 'Analytics' },
                             { key: 'profile', icon: FiUser, label: 'Profile' },
                         ].map(({ key, icon: Icon, label }) => (
                             <li key={key} onClick={() => { setActiveMenu(key); setSelectedCourseId(null); }}

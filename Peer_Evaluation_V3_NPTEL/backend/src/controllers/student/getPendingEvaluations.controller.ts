@@ -19,12 +19,15 @@ export const getPendingEvaluations = async (
     })
       .populate({
         path: "exam",
-        select: "title questions numQuestions maxMarks answerKeyPdf answerKeyMimeType",
+        select: "title questions numQuestions maxMarks answerKeyPdf answerKeyMimeType peerEvaluationInitiated",
       })
       .lean();
 
+    // Filter out evaluations where exam is null or peer evaluation hasn't been initiated
+    const validPending = pending.filter(ev => ev.exam && (ev.exam as any).peerEvaluationInitiated === true);
+
     const evaluations = await Promise.all(
-      pending.map(async (ev) => {
+      validPending.map(async (ev) => {
         const exam = ev.exam as unknown as {
           _id: string;
           title: string;

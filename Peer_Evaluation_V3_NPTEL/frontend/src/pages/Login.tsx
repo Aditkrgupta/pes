@@ -36,7 +36,11 @@ export default function Login() {
     try {
       const res = await axios.post(
         `http://localhost:${PORT}/api/auth/login`,
-        { email, password },
+        {
+          email,
+          password,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
         { withCredentials: true }
       );
 

@@ -13,7 +13,9 @@ import { getSubmissions } from "../../controllers/student/getSubmissions.control
 import { flagEvaluation } from "../../controllers/student/flagEvaluation.controller.ts"; // using correct file
 import { submitPeerEvaluation } from "../../controllers/student/submitPeerEvaluation.controller.ts";
 import { getSubmissionPdf } from "../../controllers/student/getSubmissionPdf.controller.ts";
+import { getStudentLearningAnalytics } from "../../controllers/teacher/learningAnalytics.controller.ts";
 import { authMiddleware } from "../../middlewares/authMiddleware.ts";
+import { auditLogger } from "../../middlewares/auditMiddleware.ts";
 import {
   getAllCourses,
   getStudentCourses,
@@ -35,19 +37,26 @@ router.get("/profile", authMiddleware, getStudentProfile);
 router.get("/courses", authMiddleware, getStudentCourses);
 router.get("/exams", authMiddleware, getStudentExams);
 router.get("/courses/:courseId/exams", authMiddleware, getStudentExamsByCourse);
-router.post("/evaluate", authMiddleware, submitEvaluation);
+router.get("/analytics", authMiddleware, getStudentLearningAnalytics);
+router.post("/evaluate", authMiddleware, auditLogger("Submit evaluation", "Evaluation", (req) => req.body.evaluationId || null), submitEvaluation);
 router.get("/pending-evaluations", authMiddleware, getPendingEvaluations);
 router.get("/results", authMiddleware, getEvaluationResults);
 router.post(
   "/submit-answer",
   authMiddleware,
+  auditLogger("Submit answer", "Submission", (req) => req.body.examId || null),
   upload.single("pdf"),
   submitAnswer
 );
 router.get("/submissions", authMiddleware, getSubmissions);
-router.post("/flag-evaluation", authMiddleware, flagEvaluation);
-router.post("/submit-peer-evaluation", authMiddleware, submitPeerEvaluation);
-router.get("/submission-pdf/:submissionId", authMiddleware, getSubmissionPdf);
+router.post("/flag-evaluation", authMiddleware, auditLogger("Flag evaluation", "Evaluation", (req) => req.body.evaluationId || null), flagEvaluation);
+router.post("/submit-peer-evaluation", authMiddleware, auditLogger("Submit peer evaluation", "Evaluation", (req) => req.body.evaluationId || null), submitPeerEvaluation);
+router.get(
+  "/submission-pdf/:submissionId",
+  authMiddleware,
+  auditLogger("Download submission PDF", "Submission", (req) => req.params.submissionId),
+  getSubmissionPdf
+);
 router.get(
   "/enrolled-courses-batches",
   authMiddleware,

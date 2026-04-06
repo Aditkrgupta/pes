@@ -8,11 +8,15 @@ export const sendBatchReminderEmails = async (
   message: string
 ) => {
   try {
-    const batch = await Batch.findById(batchId).populate(
-      "students",
-      "email name"
-    );
+    const batch = await Batch.findById(batchId)
+      .populate("students", "email name")
+      .populate("instructor", "email name");
     if (!batch) throw new Error("Batch not found");
+
+    const instructor = batch.instructor as unknown as { email?: string; name?: string };
+    const fromAddress = instructor?.email
+      ? `${instructor.name || "Teacher"} <${instructor.email}>`
+      : undefined;
 
     // 👇 Correct type assertion
     const students = batch.students as unknown as IUser[];
@@ -22,7 +26,8 @@ export const sendBatchReminderEmails = async (
         await sendReminderEmail(
           student.email,
           subject,
-          message.replace("{{name}}", student.name)
+          message.replace("{{name}}", student.name),
+          fromAddress
         );
       }
     }
